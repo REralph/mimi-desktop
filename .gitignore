@@ -1,0 +1,17 @@
+# Gradle / Kotlin build output
+.gradle/
+.kotlin/
+build/
+local.properties
+
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log
+*.log
+
+# IDE
+.idea/
+*.iml
+
+# scratch work
+wip/
