@@ -3,7 +3,7 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
 ![Compose Multiplatform](https://img.shields.io/badge/Compose-Desktop-4285F4?logo=jetpackcompose&logoColor=white)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-831%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-833%20passing-brightgreen)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 **Mimi** is a personal life-organiser made of two apps I designed and built: an Android app (habits,
@@ -19,6 +19,16 @@ job-application tracker that reads Gmail.
 
 *Screenshots are rendered from the app's built-in sample data (`gradlew renderPreviews`), not real records.*
 
+## Try it (Windows 10/11, no install)
+
+1. Download `Mimi-desktop-1.0.0-windows-x64.zip` from the [latest release](https://github.com/REralph/mimi-desktop/releases/latest)
+   and unzip it. Java is included.
+2. Double-click **`Start Mimi demo.bat`**. The app opens with invented sample data and a pretend phone,
+   and nothing is read from or saved to your PC.
+
+Windows may warn that the app isn't code-signed: click **More info** → **Run anyway**. `Mimi.exe` on its own
+is the real app, which pairs with the Mimi phone app over Wi-Fi.
+
 ## Highlights
 
 - **Phone ↔ PC sync with its own secure protocol.** The phone runs a small HTTP server and the PC
@@ -32,7 +42,7 @@ job-application tracker that reads Gmail.
   offer, rejection) and merges them with job folders on disk into one status table.
 - **Rules-based planners**: an evening skin-care plan that spaces out exfoliating nights and can use
   a UV forecast (Open-Meteo), and a supplements schedule checked against NHS/EFSA upper limits.
-- **Well tested**: 831 automated tests (unit, UI and **interop tests** that compile the phone's real
+- **Well tested**: 833 automated tests (unit, UI and **interop tests** that compile the phone's real
   link code and run the desktop client against it, so the two sides can't drift apart).
 - Custom dark "glass" UI in Compose Desktop with its own window frame, an emoji picker and a
   developer mode that labels every UI section with a reference number.
@@ -51,13 +61,15 @@ Requires JDK 17+ on Windows.
 
 ```bash
 gradlew run                 # start the app
+gradlew run --args=--demo   # start it with sample data and a pretend phone (see DemoMode.kt)
 gradlew test                # run the test suite
 gradlew renderPreviews      # render every page to PNG with sample data (build/previews)
+gradlew createDistributable # self-contained app folder with Mimi.exe (build/compose/binaries)
 install.bat                 # build and install as "Mimi" with Desktop and Start-menu shortcuts
 ```
 
-Without a paired phone the app shows only the **Phone** page; everything else needs a phone running
-the Mimi Android app on the same Wi-Fi.
+Without a paired phone the real app shows only the **Phone** page. Everything else needs a phone running
+the Mimi Android app on the same Wi-Fi, or the demo mode.
 
 ---
 

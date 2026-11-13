@@ -52,27 +52,33 @@ internal const val WINDOW_HEIGHT_DP = 860
 /** [WINDOW_WIDTH_DP] x [WINDOW_HEIGHT_DP], what the window's state starts from on every launch. */
 internal fun openingWindowSize() = DpSize(WINDOW_WIDTH_DP.dp, WINDOW_HEIGHT_DP.dp)
 
-fun main() {
+fun main(args: Array<String>) {
     installCrashHandler()
+    // `--demo`: invented sample data and a pretend phone, with nothing read from or saved to this PC (see DemoMode.kt).
+    val demo = isDemo(args)
     application {
-        val store = remember { DesktopStore() }
         val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
+        val demoSetup = remember { if (demo) DemoSetup(scope) else null }
+        val store = remember { demoSetup?.store ?: DesktopStore() }
         // Loads the paired phone's last data (if any) and, if paired, asks the phone for fresh data.
-        val skinCare = remember { SkinCareStore.default() }
-        val weather = remember { WeatherStore.default() }
-        val vitamins = remember { VitaminStore.default() }
-        val emojis = remember { CalendarEmojiStore.default() }
-        val jobs = remember { com.example.a2desktop.data.JobsStore.default() }
-        val careSync = remember { com.example.a2desktop.data.CareSync.default() }
+        val skinCare = remember { if (demo) SkinCareStore() else SkinCareStore.default() }
+        val weather = remember { if (demo) WeatherStore() else WeatherStore.default() }
+        val vitamins = remember { if (demo) VitaminStore() else VitaminStore.default() }
+        val emojis = remember { if (demo) CalendarEmojiStore() else CalendarEmojiStore.default() }
+        val jobs = remember { demoSetup?.jobs ?: com.example.a2desktop.data.JobsStore.default() }
+        val careSync = remember { if (demo) com.example.a2desktop.data.CareSync() else com.example.a2desktop.data.CareSync.default() }
         val link = remember {
-            val client = LinkClient()
-            LinkController(
-                store, LinkStorage(), client, scope, writer = client, editor = client,
-                outbox = com.example.a2desktop.link.Outbox.default(),
-                finder = com.example.a2desktop.link.PhoneFinder(),
-                vpnCheck = com.example.a2desktop.link.LocalNetworks::vpnActive,
-            )
+            demoSetup?.link ?: run {
+                val client = LinkClient()
+                LinkController(
+                    store, LinkStorage(), client, scope, writer = client, editor = client,
+                    outbox = com.example.a2desktop.link.Outbox.default(),
+                    finder = com.example.a2desktop.link.PhoneFinder(),
+                    vpnCheck = com.example.a2desktop.link.LocalNetworks::vpnActive,
+                )
+            }
         }
+        val appTitle = if (demo) "Mimi (demo)" else "Mimi"
         val icon = remember { loadWindowIcon() }
         // Until a phone is paired there is nothing to look at, so open where pairing happens.
         val initialPage = remember { if (link.pairing == null) Page.PHONE else Page.CALENDAR }
@@ -83,7 +89,7 @@ fun main() {
         // and the thin handles around the edge (WindowResize.kt) do the resizing Windows would have.
         Window(
             onCloseRequest = ::exitApplication,
-            title = "Mimi", // still what the Windows taskbar shows
+            title = appTitle, // still what the Windows taskbar shows
             icon = icon,
             state = windowState,
             undecorated = true,
@@ -107,7 +113,7 @@ fun main() {
                 Box(modifier = Modifier.fillMaxSize().border(1.dp, Color.White.copy(alpha = if (maximised) 0f else 0.14f))) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         TitleBar(
-                            title = "Mimi",
+                            title = appTitle,
                             maximised = maximised,
                             onMinimise = { windowState.isMinimized = true },
                             onToggleMaximise = toggleMaximise,

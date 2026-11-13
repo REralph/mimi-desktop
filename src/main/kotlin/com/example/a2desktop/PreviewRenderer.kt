@@ -6,11 +6,8 @@ import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.unit.Density
 import com.example.a2desktop.data.CalendarEmojiStore
 import com.example.a2desktop.data.DesktopStore
-import com.example.a2desktop.data.sampleSnapshot
 import com.example.a2desktop.link.LinkController
-import com.example.a2desktop.link.LinkResult
 import com.example.a2desktop.link.LinkStorage
-import com.example.a2desktop.link.SnapshotSource
 import com.example.a2desktop.link.StoredPairing
 import com.example.a2desktop.theme.A2Theme
 import com.example.a2desktop.ui.A2App
@@ -20,8 +17,6 @@ import java.nio.file.Files
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.jetbrains.skia.EncodedImageFormat
 
 /**
@@ -39,14 +34,14 @@ fun main(args: Array<String>) {
             it.loadSampleData()
             it.enterDateOfBirth(it.today.minusYears(28).minusMonths(4).minusDays(8))
         }
-        val link = LinkController(store, tempStorage(), FakePhone(), CoroutineScope(Job()), Dispatchers.Unconfined)
+        val link = LinkController(store, tempStorage(), SamplePhone("Preview phone"), CoroutineScope(Job()), Dispatchers.Unconfined)
         render(File(outDir, "${page.name.lowercase()}.png"), 1360, 860) { A2Theme { A2App(store, link, page) } }
     }
 
     // Nothing received yet — what a data page looks like before the phone has sent anything.
     listOf(Page.CALENDAR, Page.GYM).forEach { page ->
         val store = DesktopStore()
-        val link = LinkController(store, tempStorage(), FakePhone(), CoroutineScope(Job()), Dispatchers.Unconfined)
+        val link = LinkController(store, tempStorage(), SamplePhone("Preview phone"), CoroutineScope(Job()), Dispatchers.Unconfined)
         render(File(outDir, "${page.name.lowercase()}_nodata.png"), 1360, 860) { A2Theme { A2App(store, link, page) } }
     }
 
@@ -54,7 +49,7 @@ fun main(args: Array<String>) {
     listOf(Page.CALENDAR, Page.GYM, Page.DREAMS, Page.LIFE, Page.PHONE).forEach { page ->
         val store = DesktopStore()
         val storage = tempStorage().also { it.savePairing(StoredPairing("192.168.1.23:47321", "ABCDEFGHJKLMNPQRSTUV")) }
-        val link = LinkController(store, storage, FakePhone(), CoroutineScope(Job()), Dispatchers.Unconfined)
+        val link = LinkController(store, storage, SamplePhone("Preview phone"), CoroutineScope(Job()), Dispatchers.Unconfined)
         render(File(outDir, "${page.name.lowercase()}_linked.png"), 1360, 860) { A2Theme { A2App(store, link, page) } }
     }
 
@@ -62,7 +57,7 @@ fun main(args: Array<String>) {
     run {
         val store = DesktopStore()
         val storage = tempStorage().also { it.savePairing(StoredPairing("192.168.1.23:47321", "ABCDEFGHJKLMNPQRSTUV")) }
-        val link = LinkController(store, storage, FakePhone(), CoroutineScope(Job()), Dispatchers.Unconfined)
+        val link = LinkController(store, storage, SamplePhone("Preview phone"), CoroutineScope(Job()), Dispatchers.Unconfined)
         val today = java.time.LocalDate.now()
         val emojis = CalendarEmojiStore(null).also {
             it.setEmoji("Water plants", "💧")
@@ -80,7 +75,7 @@ fun main(args: Array<String>) {
     // The Jobs page: with a (fake, invented) mailbox connected and read, and before Gmail is set up (jobs_sample.png, jobs_setup.png).
     run {
         val store = DesktopStore()
-        val link = LinkController(store, tempStorage(), FakePhone(), CoroutineScope(Job()), Dispatchers.Unconfined)
+        val link = LinkController(store, tempStorage(), SamplePhone("Preview phone"), CoroutineScope(Job()), Dispatchers.Unconfined)
         render(File(outDir, "jobs_sample.png"), 1360, 1500) { A2Theme { A2App(store, link, Page.JOBS, jobs = com.example.a2desktop.data.sampleJobsStore()) } }
         render(File(outDir, "jobs_notconnected.png"), 1360, 900) { A2Theme { A2App(store, link, Page.JOBS, jobs = com.example.a2desktop.data.sampleJobsStore(connected = false)) } }
         // The Connect page: connected to the (fake) mailbox, and before the one-time Gmail setup is done (connect_connected.png, connect_setup.png).
@@ -95,19 +90,6 @@ fun main(args: Array<String>) {
 }
 
 private fun tempStorage() = LinkStorage(Files.createTempDirectory("a2-preview").toFile())
-
-/** Answers like a phone that is serving its snapshot. */
-private class FakePhone : SnapshotSource {
-    private val json = Json { encodeDefaults = true }
-    override fun fetch(address: com.example.a2desktop.link.LinkAddress, pairingKey: String): LinkResult {
-        val today = java.time.LocalDate.now()
-        val snapshot = sampleSnapshot(today).copy(
-            deviceName = "Preview phone",
-            dateOfBirthEpochDay = today.minusYears(28).minusMonths(4).minusDays(8).toEpochDay(),
-        )
-        return LinkResult.Ok(snapshot, json.encodeToString(snapshot))
-    }
-}
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun render(file: File, width: Int, height: Int, content: @Composable () -> Unit) {
