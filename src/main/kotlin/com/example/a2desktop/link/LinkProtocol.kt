@@ -36,7 +36,7 @@ data class LinkSnapshot(
     val deviceName: String,
     /** From the Life in Months page; null when the user hasn't entered one. Never assumed. */
     val dateOfBirthEpochDay: Long? = null,
-    /** Earliest date anything was tracked (habit records or check-ins) — where the automatic Sober
+    /** Earliest date anything was tracked (habit records or check-ins) — where the automatic streak
      * days start. Null when nothing has ever been tracked. */
     val earliestTrackedEpochDay: Long? = null,
     val habits: List<LinkHabit> = emptyList(),
@@ -73,7 +73,7 @@ data class LinkHabit(
     val name: String,
     val nickname: String,
     val colorArgb: Int,
-    /** The designated Sober/streak habit — see the phone's withEffectiveSoberDesignation. */
+    /** The designated streak habit — see the phone's rule for which habit is the streak habit. */
     val isStreakHabit: Boolean,
     val breaksStreakOfHabitId: Long? = null,
     val linkedToCalendar: Boolean,

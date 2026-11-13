@@ -469,9 +469,9 @@ private fun SelectedDayPart(store: DesktopStore, date: LocalDate, link: LinkCont
             onRepeat = if (phoneData) ({ repeating = it }) else null,
         )
         // The habits, each as just its emoji (its name shows when the pointer rests on it): tap one to record it on this day,
-        // tap it again to clear it. Sober is worked out, never recorded, so it has no button.
+        // tap it again to clear it. The streak habit is worked out, never recorded, so it has no button.
         val recorded = store.logs[date] ?: emptySet()
-        val loggable = store.habits.filter { !it.isSober }
+        val loggable = store.habits.filter { !it.isStreak }
         if (loggable.isNotEmpty()) {
             Text("Habits", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 14.dp, bottom = 6.dp))
             FlowRow(

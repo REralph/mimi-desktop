@@ -110,7 +110,7 @@ class PhoneEditsTest {
 
     @Test fun whatThePhoneAnswersWinsEvenWhenItClearedAnotherHabitAsWell() {
         // Recording a habit the phone has linked to another also clears the other: show the phone's result.
-        val other = sampleSnapshot(today).habits.first { it.name == "Drink" }
+        val other = sampleSnapshot(today).habits.first { it.name == "Takeaway" }
         val r = rig { _, _ -> EditResult.Done(LinkEditReply(ok = true, dateEpochDay = oct27.toEpochDay(), habitIds = listOf(other.id))) }
         r.store.applyHabitDay(oct27, setOf(gym.id))
         r.link.setHabit(oct27, other.id, logged = true)
@@ -141,12 +141,12 @@ class PhoneEditsTest {
     }
 
     @Test fun whenThePhoneRefusesNothingChangesHereAndItCatchesUp() {
-        val r = rig { _, _ -> EditResult.Failed("Sober is worked out automatically.", phoneRefused = true) }
+        val r = rig { _, _ -> EditResult.Failed("The streak habit is worked out automatically.", phoneRefused = true) }
         val before = r.store.logs.toMap()
         val fetches = r.phone.fetches
         var outcome: EditResult? = null
         r.link.setHabit(oct27, gym.id, logged = true) { outcome = it }
-        assertEquals("Sober is worked out automatically.", (outcome as EditResult.Failed).message)
+        assertEquals("The streak habit is worked out automatically.", (outcome as EditResult.Failed).message)
         assertEquals(before, r.store.logs.toMap())
         assertTrue(r.link.reachable)
         assertEquals(fetches + 1, r.phone.fetches)

@@ -26,7 +26,7 @@ import com.example.a2desktop.logic.habitDisplayLine
 import com.example.a2desktop.logic.habitsOnDate
 import com.example.a2desktop.logic.WorkSchedule
 import com.example.a2desktop.logic.buildWorkSchedule
-import com.example.a2desktop.logic.soberConflictingIds
+import com.example.a2desktop.logic.streakConflictingIds
 import com.example.a2desktop.logic.totalForPeriod
 import com.example.a2desktop.model.CalendarEvent
 import com.example.a2desktop.model.Dream
@@ -69,7 +69,7 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
         private set
     var habits by mutableStateOf<List<Habit>>(emptyList())
         private set
-    /** Habits actually RECORDED per date (never includes the derived Sober days). */
+    /** Habits actually RECORDED per date (never includes the derived streak days). */
     val logs = mutableStateMapOf<LocalDate, Set<Long>>()
     var earliestTracked by mutableStateOf<LocalDate?>(null)
         private set
@@ -144,7 +144,7 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
         if (now != today) today = now
     }
 
-    val soberHabit: Habit? get() = habits.firstOrNull { it.isSober }
+    val streakHabit: Habit? get() = habits.firstOrNull { it.isStreak }
 
     /** Replaces everything on screen with [snapshot], atomically (the UI never sees half of it). */
     fun applySnapshot(snapshot: LinkSnapshot, fromPhone: Boolean = true) {
@@ -154,7 +154,7 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
                 emoji = h.emoji,
                 name = h.name,
                 colorArgb = h.colorArgb,
-                isSober = h.isStreakHabit,
+                isStreak = h.isStreakHabit,
                 linkedToCalendar = h.linkedToCalendar,
                 breaksStreakOfHabitId = h.breaksStreakOfHabitId,
                 showInInformation = h.showInInformation,
@@ -220,7 +220,7 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
         }
     }
 
-    /** What the Calendar shows for [date]: recorded habits plus the derived Sober state. */
+    /** What the Calendar shows for [date]: recorded habits plus the derived streak state. */
     fun habitsOn(date: LocalDate): Set<Long> = habitsOnDate(date, logs[date].orEmpty(), habits, earliestTracked, today)
 
     // ---- Sample-mode editing (all of these do nothing once data comes from the phone) ----
@@ -340,7 +340,7 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
 
     // ---- Derived numbers (the same maths as the phone's HabitStatsTracker) ----
 
-    /** Every date from the first tracked day to today with Sober derived, plus any later recorded dates. */
+    /** Every date from the first tracked day to today with the streak habit derived, plus any later recorded dates. */
     private fun derivedByDate(): Map<LocalDate, Set<Long>> {
         val result = HashMap<LocalDate, Set<Long>>(logs)
         val start: LocalDate? = earliestTracked
@@ -356,15 +356,15 @@ class DesktopStore(today: LocalDate = LocalDate.now()) {
 
     fun infoLines(): List<InfoLine> {
         val derived = derivedByDate()
-        val sober = soberHabit
-        val soberDays = if (sober == null) emptyList() else derived.filter { (d, ids) -> sober.id in ids && !d.isAfter(today) }.keys.sorted()
+        val streak = streakHabit
+        val streakHabitDays = if (streak == null) emptyList() else derived.filter { (d, ids) -> streak.id in ids && !d.isAfter(today) }.keys.sorted()
         return habits
             .filter { it.showInInformation }
             .sortedWith(compareBy({ it.sortOrder }, { it.id }))
             .map { habit ->
-                val recorded = if (habit.id == sober?.id) soberDays else logs.filterValues { habit.id in it }.keys.sorted()
-                val streak = if (habit.isSober) {
-                    val conflicting = habits.soberConflictingIds(habit.id)
+                val recorded = if (habit.id == streak?.id) streakHabitDays else logs.filterValues { habit.id in it }.keys.sorted()
+                val streak = if (habit.isStreak) {
+                    val conflicting = habits.streakConflictingIds(habit.id)
                     currentHabitStreakLength(computeHabitStreaks(derived, habit.id, conflicting), derived, habit.id, conflicting)
                 } else {
                     0

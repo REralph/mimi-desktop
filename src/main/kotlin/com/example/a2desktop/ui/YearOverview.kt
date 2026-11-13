@@ -59,7 +59,7 @@ private const val TOTAL_ROWS = 32
  * Month Overview — the phone's page 0.7 on the PC: the whole year as one table, a column for each month and a row for
  * each date (1–31). A day's square is filled with a band in the colour of every calendar-linked habit recorded that
  * day (side by side when there are several), exactly as the phone paints it; a date that does not exist in that month
- * (30 February …) stays empty. The last square of every run of Sober days carries a number: how many days in a row
+ * (30 February …) stays empty. The last square of every run of streak days carries a number: how many days in a row
  * that run lasted (counting days of earlier years too), so each streak's length can be read straight off the table.
  * The phone has no per-day taps here, but a mouse can hover: the date and its habits are then read out in the
  * header. [onBack] returns to the month grid; the year can be stepped with the arrows.
@@ -76,14 +76,14 @@ fun YearOverview(
     // Written by the squares, read only by YearHeader: a hover must not redo the whole table.
     val hovered = remember { mutableStateOf<LocalDate?>(null) }
     val linked = store.habits.filter { it.linkedToCalendar }
-    // The blue squares: Sober days. The last square of each run of them says how long the run was.
-    val sober = store.soberHabit?.takeIf { it.linkedToCalendar }
-    val streaks = if (sober == null) emptyMap() else runEndsInYear(year) { sober.id in store.habitsOn(it) }
+    // The blue squares: streak days. The last square of each run of them says how long the run was.
+    val streak = store.streakHabit?.takeIf { it.linkedToCalendar }
+    val streaks = if (streak == null) emptyMap() else runEndsInYear(year) { streak.id in store.habitsOn(it) }
     Column(modifier = modifier.fillMaxSize().padding(24.dp)) {
         YearHeader(store, linked, year, hovered, onYearChange, onBack)
         Spacer(Modifier.height(14.dp))
         YearTable(
-            store, linked, year, hovered, streaks, numberInk = sober?.color?.let(::inkOn) ?: Color.Black,
+            store, linked, year, hovered, streaks, numberInk = streak?.color?.let(::inkOn) ?: Color.Black,
             modifier = Modifier.weight(1f).fillMaxWidth().devRef("1.10", "Year table"),
         )
         Spacer(Modifier.height(12.dp))
@@ -104,9 +104,9 @@ fun YearOverview(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (sober != null) {
+            if (streak != null) {
                 Text(
-                    "The number on a run's last ${sober.name} square is how many days in a row it lasted",
+                    "The number on a run's last ${streak.name} square is how many days in a row it lasted",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -218,7 +218,7 @@ private fun YearRow(
 
 /**
  * One day's square: a band per habit recorded that day, side by side; nothing if none (or if the date doesn't exist).
- * [streakDays] is set on the last square of a run of Sober days: the run's length, written across the middle of it.
+ * [streakDays] is set on the last square of a run of streak days: the run's length, written across the middle of it.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

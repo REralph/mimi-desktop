@@ -22,7 +22,7 @@ fun sampleSnapshot(today: LocalDate): LinkSnapshot {
     val rng = Random(7)
     fun day(offset: Int) = today.minusDays(offset.toLong()).toEpochDay()
 
-    val sober = 1L; val gym = 2L; val drink = 3L; val reading = 4L; val meditation = 5L; val slip = 6L
+    val streak = 1L; val gym = 2L; val takeaway = 3L; val reading = 4L; val meditation = 5L; val lateNight = 6L
     fun habit(
         id: Long, emoji: String, name: String, color: Long, streak: Boolean = false, linked: Boolean = true,
         values: List<String>, months: Int? = null, goalStart: String = "LAST_RECORDED", goalDays: Int = 90, order: Int,
@@ -32,12 +32,12 @@ fun sampleSnapshot(today: LocalDate): LinkSnapshot {
         totalPeriodMonths = months, goalStartMode = goalStart, goalDurationDays = goalDays,
     )
     val habits = listOf(
-        habit(sober, "☁️", "Sober", 0xFF6EC6F5, streak = true, values = listOf("STREAK", "TOTAL"), months = 2, goalStart = "CURRENT_STREAK", order = 0),
+        habit(streak, "🔥", "Daily streak", 0xFF6EC6F5, streak = true, values = listOf("STREAK", "TOTAL"), months = 2, goalStart = "CURRENT_STREAK", order = 0),
         habit(gym, "🏋️", "Gym", 0xFFF2C94C, values = listOf("LAST_TIME", "TOTAL"), months = 3, order = 1),
-        habit(drink, "🍷", "Drink", 0xFFF2994A, values = listOf("LAST_TIME", "GOAL_PROGRESS"), goalDays = 60, order = 2),
+        habit(takeaway, "🍕", "Takeaway", 0xFFF2994A, values = listOf("LAST_TIME", "GOAL_PROGRESS"), goalDays = 60, order = 2),
         habit(reading, "📖", "Reading", 0xFF6FCF97, linked = false, values = listOf("LAST_TIME", "TOTAL"), order = 3),
         habit(meditation, "🧘", "Meditation", 0xFFBB6BD9, linked = false, values = listOf("LAST_TIME", "TOTAL"), months = 1, order = 4),
-        habit(slip, "🛑", "Slip", 0xFFEB5757, values = listOf("LAST_TIME", "TOTAL"), order = 5),
+        habit(lateNight, "🌙", "Late night", 0xFFEB5757, values = listOf("LAST_TIME", "TOTAL"), order = 5),
     )
 
     // Random history up to 3 days ago; the last few days are fixed so the demo is stable.
@@ -45,8 +45,8 @@ fun sampleSnapshot(today: LocalDate): LinkSnapshot {
     fun record(id: Long, epochDay: Long) = days.getOrPut(id) { mutableListOf() }.add(epochDay)
     for (offset in 74 downTo 3) {
         if (rng.nextDouble() < 0.34) record(gym, day(offset))
-        if (rng.nextDouble() < 0.07) record(drink, day(offset))
-        if (rng.nextDouble() < 0.05) record(slip, day(offset))
+        if (rng.nextDouble() < 0.07) record(takeaway, day(offset))
+        if (rng.nextDouble() < 0.05) record(lateNight, day(offset))
         if (rng.nextDouble() < 0.50) record(reading, day(offset))
         if (rng.nextDouble() < 0.40) record(meditation, day(offset))
     }

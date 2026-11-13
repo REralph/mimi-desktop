@@ -17,7 +17,7 @@ import com.example.a2desktop.link.LinkStorage
 import com.example.a2desktop.link.SnapshotSource
 import com.example.a2desktop.logic.computeHabitStreaks
 import com.example.a2desktop.logic.runEndsInYear
-import com.example.a2desktop.logic.soberConflictingIds
+import com.example.a2desktop.logic.streakConflictingIds
 import com.example.a2desktop.theme.A2Theme
 import com.example.a2desktop.ui.A2App
 import com.example.a2desktop.ui.DevMode
@@ -123,17 +123,17 @@ class YearOverviewUiTest {
 
     @Test fun theArrowsStepTheYearAndThisYearComesBack() = rig { r ->
         r.click(r.group("1.1.1").center)
-        val sober = r.store.soberHabit!!.colorArgb and 0xFFFFFF
-        val thisYear = r.bitmap().count(r.group("1.10"), sober)
-        assertTrue(thisYear > 2000, "2026 has Sober days painted ($thisYear pixels)")
+        val streak = r.store.streakHabit!!.colorArgb and 0xFFFFFF
+        val thisYear = r.bitmap().count(r.group("1.10"), streak)
+        assertTrue(thisYear > 2000, "2026 has streak days painted ($thisYear pixels)")
 
         r.click(r.group("1.9.1").center) // previous year: 2025, before anything was recorded
-        assertEquals(0, r.bitmap().count(r.group("1.10"), sober), "2025 is empty")
+        assertEquals(0, r.bitmap().count(r.group("1.10"), streak), "2025 is empty")
         r.click(r.group("1.9.3").center) // next year twice: 2026, then 2027 (nothing recorded yet)
         r.click(r.group("1.9.3").center)
-        assertEquals(0, r.bitmap().count(r.group("1.10"), sober), "2027 is empty")
+        assertEquals(0, r.bitmap().count(r.group("1.10"), streak), "2027 is empty")
         r.click(r.group("1.9.2").center) // This year
-        assertEquals(thisYear, r.bitmap().count(r.group("1.10"), sober), "This year is back to 2026")
+        assertEquals(thisYear, r.bitmap().count(r.group("1.10"), streak), "This year is back to 2026")
     }
 
     @Test fun everySquareHasTheColoursOfTheHabitsRecordedOnThatDateSideBySide() = rig { r ->
@@ -203,11 +203,11 @@ class YearOverviewUiTest {
 
     // ---- the streak number on the last blue square of each run ----
 
-    /** The days of 2026 that end a run of Sober days, worked out plainly from what the store shows. */
-    private fun soberRunEnds(store: DesktopStore): List<LocalDate> {
-        val sober = store.soberHabit!!.id
+    /** The days of 2026 that end a run of streak days, worked out plainly from what the store shows. */
+    private fun streakRunEnds(store: DesktopStore): List<LocalDate> {
+        val streak = store.streakHabit!!.id
         return generateSequence(LocalDate.of(2026, 1, 1)) { it.plusDays(1) }.takeWhile { it.year == 2026 }
-            .filter { sober in store.habitsOn(it) && sober !in store.habitsOn(it.plusDays(1)) }.toList()
+            .filter { streak in store.habitsOn(it) && streak !in store.habitsOn(it.plusDays(1)) }.toList()
     }
 
     /** The dark ink inside a square: how many pixels of it, and how wide it is (0 when there is none). */
@@ -233,12 +233,12 @@ class YearOverviewUiTest {
         r.click(r.group("1.1.1").center)
         val table = r.group("1.10")
         val shot = r.bitmap()
-        val sober = r.store.soberHabit!!
-        val ends = soberRunEnds(r.store).toSet()
+        val streak = r.store.streakHabit!!
+        val ends = streakRunEnds(r.store).toSet()
         assertTrue(ends.size >= 8, "the demo year has several runs (${ends.size})")
         var blueDays = 0
         for (day in generateSequence(LocalDate.of(2026, 1, 1)) { it.plusDays(1) }.takeWhile { it.year == 2026 }) {
-            if (sober.id !in r.store.habitsOn(day)) continue
+            if (streak.id !in r.store.habitsOn(day)) continue
             blueDays++
             val ink = shot.inkIn(table, day).pixels
             if (day in ends) assertTrue(ink > 4, "$day ends a run, so it has a number ($ink pixels of writing)")
@@ -251,7 +251,7 @@ class YearOverviewUiTest {
         r.click(r.group("1.1.1").center)
         val table = r.group("1.10")
         val shot = r.bitmap()
-        val lengths = runEndsInYear(2026) { r.store.soberHabit!!.id in r.store.habitsOn(it) }
+        val lengths = runEndsInYear(2026) { r.store.streakHabit!!.id in r.store.habitsOn(it) }
         val twoDigits = lengths.filterValues { it >= 10 }.keys
         val oneDigit = lengths.filterValues { it < 10 }.keys
         assertTrue(twoDigits.isNotEmpty() && oneDigit.isNotEmpty(), "the demo year has a 10+ day run and shorter ones ($lengths)")
@@ -262,12 +262,12 @@ class YearOverviewUiTest {
 
     @Test fun theNumbersAreTheSameStreakLengthsThePhonesMathsGives() {
         val store = DesktopStore(today).also { it.loadSampleData() }
-        val sober = store.soberHabit!!
+        val streak = store.streakHabit!!
         val start = store.earliestTracked!!
         val byDate = generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(today) }.associateWith { store.habitsOn(it) }
-        val streaks = computeHabitStreaks(byDate, sober.id, store.habits.soberConflictingIds(sober.id))
+        val streaks = computeHabitStreaks(byDate, streak.id, store.habits.streakConflictingIds(streak.id))
         assertTrue(streaks.size >= 8)
         val expected = streaks.filter { it.end.year == 2026 }.associate { it.end to it.lengthDays.toInt() }
-        assertEquals(expected, runEndsInYear(2026) { sober.id in store.habitsOn(it) })
+        assertEquals(expected, runEndsInYear(2026) { streak.id in store.habitsOn(it) })
     }
 }

@@ -595,11 +595,11 @@ class CalendarEditsUiTest {
 
     // ---- the habit emojis in the Selected day card ----
 
-    @Test fun theSelectedDayCardHasAnEmojiForEveryHabitThatCanBeRecordedAndNoneForSober() {
+    @Test fun theSelectedDayCardHasAnEmojiForEveryHabitThatCanBeRecordedAndNoneForTheStreakHabit() {
         val r = rig()
         try {
             val row = r.reveal("1.4.3")
-            val recordable = r.store.habits.filter { !it.isSober }
+            val recordable = r.store.habits.filter { !it.isStreak }
             assertTrue(recordable.size >= 3)
             // 34 dp wide buttons 8 dp apart, from the group's left edge: the last one is the same distance along, and nothing follows it.
             val first = row.left + 17f
@@ -794,7 +794,7 @@ class CalendarEditsUiTest {
     @Test fun aHabitIsRecordedOnTheSelectedDayOnlyAndRestoredWhenYouComeBack() {
         val r = rig()
         try {
-            val otherHabit = r.store.habits.first { !it.isSober && it.id != gymId }.id
+            val otherHabit = r.store.habits.first { !it.isStreak && it.id != gymId }.id
             val before28 = r.store.logs[oct28].orEmpty()
             fun phoneHolds(date: LocalDate, vararg ids: Long) {
                 r.editor.reply = EditResult.Done(LinkEditReply(ok = true, dateEpochDay = date.toEpochDay(), habitIds = ids.toList()))

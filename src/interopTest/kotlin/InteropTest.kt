@@ -44,7 +44,7 @@ class InteropTest {
         todayEpochDay = 20_000,
         deviceName = "Interop Phone",
         dateOfBirthEpochDay = 9_000,
-        habits = listOf(PhoneHabit(1, "☁️", "Sober", "Sober", -1, true, null, true, true, 0, listOf("STREAK", "TOTAL"))),
+        habits = listOf(PhoneHabit(1, "🔥", "Daily streak", "Daily streak", -1, true, null, true, true, 0, listOf("STREAK", "TOTAL"))),
         workShifts = listOf(PhoneWorkShift(20_000, 12 * 60 + 30, 21 * 60), PhoneWorkShift(20_001, 22 * 60, 6 * 60, endsNextDay = true)),
         workCoveredDays = listOf(20_000, 20_001, 20_002),
     )
@@ -83,7 +83,7 @@ class InteropTest {
         val received = (result as LinkResult.Ok).snapshot
         assertEquals("Interop Phone", received.deviceName)
         assertEquals(9_000L, received.dateOfBirthEpochDay)
-        assertEquals("Sober", received.habits.single().name)
+        assertEquals("Daily streak", received.habits.single().name)
         assertEquals(listOf("STREAK", "TOTAL"), received.habits.single().displayValues)
     }
 
@@ -286,12 +286,12 @@ class InteropTest {
     }
 
     @Test fun whenThePhoneRefusesAnEditTheDesktopGetsItsReasonAndNothingIsApplied() {
-        phoneEditReply = PhoneEditReply(ok = false, message = "Sober is worked out automatically.")
+        phoneEditReply = PhoneEditReply(ok = false, message = "The streak habit is worked out automatically.")
         val result = LinkClient().send(LinkAddress("127.0.0.1", port), phoneKey, "/v1/habit", """{"habitId":2,"dateEpochDay":20753,"logged":true}""")
         assertTrue(result is EditResult.Failed)
         result as EditResult.Failed
         assertTrue(result.phoneRefused)
-        assertEquals("Sober is worked out automatically.", result.message)
+        assertEquals("The streak habit is worked out automatically.", result.message)
     }
 
     @Test fun anEditWithTheWrongKeyNeverReachesThePhone() {
@@ -340,7 +340,7 @@ class InteropTest {
             assertTrue(link.reachable, link.error)
             assertTrue(store.readOnly)
             assertEquals("Interop Phone", store.deviceName)
-            assertEquals(listOf("Sober"), store.habits.map { it.name })
+            assertEquals(listOf("Daily streak"), store.habits.map { it.name })
             assertNotNull(store.dateOfBirth)
             val firstDay = java.time.LocalDate.ofEpochDay(20_000)
             assertEquals(java.time.LocalTime.of(12, 30), store.workSchedule.shiftOn(firstDay)?.start)
@@ -355,7 +355,7 @@ class InteropTest {
             link2.syncNow()
             assertFalse(link2.reachable)
             assertTrue(restarted.readOnly)
-            assertEquals(listOf("Sober"), restarted.habits.map { it.name })
+            assertEquals(listOf("Daily streak"), restarted.habits.map { it.name })
             assertEquals(java.time.LocalTime.of(12, 30), restarted.workSchedule.shiftOn(firstDay)?.start, "cached work times survive too")
         } finally {
             dir.deleteRecursively()

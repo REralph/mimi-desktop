@@ -247,7 +247,7 @@ class DevModeTest {
         val r = rig(Page.CALENDAR, devOn = true, height = 3000)
         try {
             r.settle()
-            // 1.4.1 (Sober line), 1.4.2 (work times line) and 1.4.4 (the old Events list) were removed; their numbers are not reused. The
+            // 1.4.1 (streak line), 1.4.2 (work times line) and 1.4.4 (the old Events list) were removed; their numbers are not reused. The
             // day's events and tasks are back as a table, 1.4.6, and the Upcoming list (the old card 1.7) is the part 1.4.7.
             assertTrue(listOf("1.4.1", "1.4.2", "1.4.4").none { it in r.dev.groups.keys }, "a removed part of the Tasks card is back")
             // The habits are one row of emoji-only buttons, 34 dp square: named chips (names, or the old caption) would be wider and wrap.

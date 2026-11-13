@@ -6,7 +6,7 @@ import com.example.a2desktop.link.LinkAddress
 import com.example.a2desktop.logic.LIFE_MONTHS
 import com.example.a2desktop.logic.habitsOnDate
 import com.example.a2desktop.logic.lifeProgress
-import com.example.a2desktop.logic.soberConflictingIds
+import com.example.a2desktop.logic.streakConflictingIds
 import com.example.a2desktop.logic.wholeMonthsLived
 import com.example.a2desktop.model.Habit
 import java.time.LocalDate
@@ -18,17 +18,17 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class LogicTest {
-    private val sober = Habit(1, "☁️", "Sober", 0, isSober = true)
+    private val streak = Habit(1, "🔥", "Daily streak", 0, isStreak = true)
     private val reading = Habit(2, "📖", "Reading", 0)
     private val running = Habit(3, "🏃", "Running", 0, linkedToCalendar = false)
-    private val linkedButHidden = Habit(4, "🛑", "Slip", 0, linkedToCalendar = false, breaksStreakOfHabitId = 1)
-    private val habits = listOf(sober, reading, running, linkedButHidden)
+    private val linkedButHidden = Habit(4, "🌙", "Late night", 0, linkedToCalendar = false, breaksStreakOfHabitId = 1)
+    private val habits = listOf(streak, reading, running, linkedButHidden)
     private val today = LocalDate.of(2026, 10, 5)
     private val start = LocalDate.of(2026, 9, 1)
 
     private fun on(date: LocalDate, vararg recorded: Long) = habitsOnDate(date, recorded.toSet(), habits, start, today)
 
-    @Test fun emptyPastDayAndTodayAreSober() {
+    @Test fun emptyPastDayAndTodayCountForTheStreak() {
         assertEquals(setOf(1L), on(LocalDate.of(2026, 9, 15)))
         assertEquals(setOf(1L), on(today))
     }
@@ -39,16 +39,16 @@ class LogicTest {
         assertEquals(emptySet(), habitsOnDate(today, emptySet(), habits, null, today)) // nothing ever tracked
     }
 
-    @Test fun aLinkedHabitReplacesSoberAndSuppressesAnExplicitSoberRecord() {
+    @Test fun aLinkedHabitReplacesTheStreakAndSuppressesAnExplicitStreakRecord() {
         assertEquals(setOf(2L), on(LocalDate.of(2026, 9, 16), 2))
         assertEquals(setOf(2L), on(LocalDate.of(2026, 9, 16), 1, 2))
     }
 
-    @Test fun aDoNotLinkHabitWithNoRelationshipDoesNotRemoveSober() =
+    @Test fun aDoNotLinkHabitWithNoRelationshipDoesNotRemoveTheStreak() =
         assertEquals(setOf(1L, 3L), on(LocalDate.of(2026, 9, 16), 3))
 
-    @Test fun aDoNotLinkHabitExplicitlyLinkedToSoberStillConflicts() {
-        assertEquals(setOf(2L, 4L), habits.soberConflictingIds(1))
+    @Test fun aDoNotLinkHabitExplicitlyLinkedToTheStreakStillConflicts() {
+        assertEquals(setOf(2L, 4L), habits.streakConflictingIds(1))
         assertEquals(setOf(4L), on(LocalDate.of(2026, 9, 16), 4))
     }
 
@@ -82,8 +82,8 @@ class LogicTest {
         assertEquals(DataSource.SAMPLE, store.source)
         assertNull(store.dateOfBirth)
         assertFalse(store.readOnly)
-        assertFalse(store.habitsOn(store.today.plusDays(1)).contains(store.soberHabit!!.id))
-        assertTrue(store.soberHabit!!.id in store.habitsOn(store.today.minusDays(1)) || store.logs[store.today.minusDays(1)] != null)
+        assertFalse(store.habitsOn(store.today.plusDays(1)).contains(store.streakHabit!!.id))
+        assertTrue(store.streakHabit!!.id in store.habitsOn(store.today.minusDays(1)) || store.logs[store.today.minusDays(1)] != null)
         val gym = store.habits.first { it.name == "Gym" }
         val day = store.today.minusDays(40)
         val before = gym.id in store.logs[day].orEmpty()
@@ -94,8 +94,8 @@ class LogicTest {
     @Test fun informationLinesUseThePhonesFormat() {
         val store = DesktopStore(LocalDate.of(2026, 10, 14)).also { it.loadSampleData() }
         val lines = store.infoLines().map { it.text }
-        assertTrue(lines.first().startsWith("☁️ — Streak: "), lines.first())
-        assertTrue(lines.any { it.startsWith("🍷 — Last: ") && it.contains("Goal: ") }, lines.toString())
+        assertTrue(lines.first().startsWith("🔥 — Streak: "), lines.first())
+        assertTrue(lines.any { it.startsWith("🍕 — Last: ") && it.contains("Goal: ") }, lines.toString())
     }
 
     @Test fun addressesMustBeLocalNetworkIpv4Literals() {

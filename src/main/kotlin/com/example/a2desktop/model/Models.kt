@@ -22,8 +22,8 @@ data class Habit(
     val emoji: String,
     val name: String,
     val colorArgb: Int,
-    /** The designated Sober/streak habit (☁️ Sober) — derived for past/present days, not logged. */
-    val isSober: Boolean = false,
+    /** The designated streak habit — derived for past/present days, not logged. */
+    val isStreak: Boolean = false,
     /** "Linked" paints this habit's dot on the Calendar; "Do Not Link" tracks it without a dot. */
     val linkedToCalendar: Boolean = true,
     val breaksStreakOfHabitId: Long? = null,

@@ -150,7 +150,7 @@ class LinkControllerTest {
     @Test fun phoneDataCannotBeEditedOnTheDesktop() {
         val store = DesktopStore(today)
         controller(store, FakeSource { phoneData() }).connect("192.168.1.23", goodKey)
-        val habit = store.habits.first { !it.isSober }
+        val habit = store.habits.first { !it.isStreak }
         val day = today.minusDays(3)
         val before = store.logs[day]
         store.toggleHabit(day, habit.id)
